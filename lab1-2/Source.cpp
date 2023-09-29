@@ -25,7 +25,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(NULL, IDI_APPLICATION);
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+2);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = L"QuadraticEquationSolver";
     wcex.hIconSm = LoadIcon(NULL, IDI_APPLICATION);
@@ -48,30 +48,28 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
     CreateWindow(L"static", L"coeff b", WS_VISIBLE | WS_CHILD, 20, 45, 100, 25, hWnd, NULL, NULL, NULL);
     CreateWindow(L"static", L"coeff c", WS_VISIBLE | WS_CHILD, 20, 85, 100, 25, hWnd, NULL, NULL, NULL);
 
- 
-    hAEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_NUMBER,
-        20, 20, 100, 25, hWnd, NULL, hInstance, NULL);
-    hBEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_NUMBER,
-        20, 60, 100, 25, hWnd, NULL, hInstance, NULL);
-    hCEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_NUMBER,
-        20, 100, 100, 25, hWnd, NULL, hInstance, NULL);
+    hAEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE, 20, 20, 100, 25, hWnd, NULL, hInstance, NULL);
+    hBEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE, 20, 60, 100, 25, hWnd, NULL, hInstance, NULL);
+    hCEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE, 20, 100, 100, 25, hWnd, NULL, hInstance, NULL);
+
 
     hButton = CreateWindow(L"BUTTON", L"Решить", WS_CHILD | WS_VISIBLE,
         20, 140, 100, 30, hWnd, (HMENU)1, hInstance, NULL);
 
-  
+   
     hResultEdit = CreateWindowEx(WS_EX_CLIENTEDGE, L"EDIT", L"", WS_CHILD | WS_VISIBLE | ES_READONLY,
         150, 20, 200, 150, hWnd, NULL, hInstance, NULL);
 
     hButtonSolve = CreateWindow(L"BUTTON", L"Решить", WS_CHILD | WS_VISIBLE,
         20, 140, 100, 30, hWnd, (HMENU)1, hInstance, NULL);
 
+    
     hButtonChangeColor = CreateWindow(L"BUTTON", L"Изменить цвет фона", WS_CHILD | WS_VISIBLE,
         180, 180, 150, 30, hWnd, (HMENU)2, hInstance, NULL);
 
     hInstance = hInst;
 
-  
+
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
@@ -90,14 +88,15 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInstance, LPSTR lpCmdLine, in
         DispatchMessage(&msg);
     }
 
-  
+    
     UnhookWindowsHookEx(hKeyboardHook);
 
     return (int)msg.wParam;
 }
 
 void ChangeWindowBackgroundColor(HWND hWnd) {
-    static COLORREF customColor = RGB(255, 255, 255); 
+    static COLORREF customColor = RGB(255, 255, 255);
+
 
     CHOOSECOLOR cc = { sizeof(CHOOSECOLOR) };
     cc.hwndOwner = hWnd;
@@ -117,12 +116,25 @@ void ChangeWindowBackgroundColor(HWND hWnd) {
 LRESULT CALLBACK KeyboardHook(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode >= 0 && wParam == WM_KEYDOWN) {
         KBDLLHOOKSTRUCT* kbStruct = (KBDLLHOOKSTRUCT*)lParam;
-        if (kbStruct->vkCode == 'B') {
-         
+        if (kbStruct->vkCode == 'B') { 
+ 
             ChangeWindowBackgroundColor(GetForegroundWindow());
         }
     }
     return CallNextHookEx(hKeyboardHook, nCode, wParam, lParam);
+}
+
+
+bool IsNumeric(const wchar_t* str) {
+    if (str == nullptr || wcslen(str) == 0)
+        return false;
+
+    for (size_t i = 0; i < wcslen(str); i++) {
+        if (!iswdigit(str[i]) && str[i] != L'.' && str[i] != L'-') {
+            return false;
+        }
+    }
+    return true;
 }
 
 
@@ -132,6 +144,11 @@ void SolveQuadraticEquation(HWND hWnd) {
     GetWindowText(hAEdit, aBuffer, sizeof(aBuffer));
     GetWindowText(hBEdit, bBuffer, sizeof(bBuffer));
     GetWindowText(hCEdit, cBuffer, sizeof(cBuffer));
+
+    if (!IsNumeric(aBuffer) || !IsNumeric(bBuffer) || !IsNumeric(cBuffer)) {
+        MessageBox(hWnd, L"Введите корректные числовые значения для коэффициентов.", L"Ошибка", MB_ICONERROR);
+        return;
+    }
 
     double a = _wtof(aBuffer);
     double b = _wtof(bBuffer);
@@ -157,11 +174,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     switch (message) {
     case WM_COMMAND:
         if (LOWORD(wParam) == 1) {
-        
+          
             SolveQuadraticEquation(hWnd);
         }
         else if (LOWORD(wParam) == 2) {
-         
+           
             ChangeWindowBackgroundColor(hWnd);
         }
         break;
