@@ -238,11 +238,10 @@ void TerminateProcces(HWND hwnd) {
 
 void UpdateProcessList(HWND hwnd) {
 
-    // Очистка listBox
     HWND listBox = GetDlgItem(hwnd, ID_PROCESS_LIST);
     SendMessage(listBox, LB_RESETCONTENT, 0, 0);
 
-    // Создание снимка (TH32CS_SNAPPROCESS включает в снимок все процессы в системе)
+   
     HANDLE hProcessSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (hProcessSnap == INVALID_HANDLE_VALUE) {
         MessageBox(hwnd, L"Error creating process snapshot.", L"Error", MB_ICONERROR);
@@ -254,7 +253,6 @@ void UpdateProcessList(HWND hwnd) {
 
     if (Process32First(hProcessSnap, &pe32)) {
         do {
-            // Открытие процесса
             HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, pe32.th32ProcessID);
 
             if (hProcess != NULL) {
@@ -263,8 +261,6 @@ void UpdateProcessList(HWND hwnd) {
                     TCHAR buffer[512];
                     _stprintf_s(buffer, _T("%s - Memory Usage: %I64u KB"), pe32.szExeFile, pmc.WorkingSetSize / (1024));
                     SendMessage(listBox, LB_ADDSTRING, 0, (LPARAM)buffer);
-
-                    //InvalidateRect(listBox, NULL, TRUE);
                 }
 
                 CloseHandle(hProcess);
