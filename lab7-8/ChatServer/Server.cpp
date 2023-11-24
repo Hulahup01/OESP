@@ -30,10 +30,12 @@ void ClientHandler(int index) {
 			return;
 		}
 
+
 		for (int i = 0; i < Counter; i++) {
 			send(Connections[i], (char*)&msg_size, sizeof(int), NULL);
 			send(Connections[i], msg, msg_size, NULL);
 		}
+		std::cout << msg << std::endl;
 		delete[] msg;
 	}
 }
